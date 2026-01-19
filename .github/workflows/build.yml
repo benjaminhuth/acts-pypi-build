@@ -17,9 +17,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
         with:
           repository: benjaminhuth/acts
           ref: refactor/examples-framework-no-root
+          path: acts
 
       - name: Install dependencies
         uses: ./.github/actions/dependencies
@@ -27,32 +30,18 @@ jobs:
           compiler: g++
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Remote terminal
-        run: curl -sSf https://sshx.io/get | sh -s run
-
-      # This is done, because the host container is mounted under /host
-      # in the linux builds, and thus all paths of spack do not work inside
-      # since they rely on symbolic links that get invalid
-      #- name: Extract packages for linux build
-      #  run: |
-      #    export boost=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*boost*')
-      #    echo $boost
-      #    export eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
-      #    echo $eigen
-      #    export tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
-      #    echo $tbb
-      #    export json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
-      #    echo $json
-      #    export hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
-      #    echo $hepmc3
+      #- name: Remote terminal
+      #  run: curl -sSf https://sshx.io/get | sh -s run
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
+        with:
+          package-dir: acts
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28 # glibc 2.28 from 2028
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
-          CIBW_ENVIRONMENT_PASS_LINUX: boost eigen tbb json hepmc3
-          CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$boost:$eigen:$tbb:$json:$hepmc3
+          CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_WORKSPACE
+          CIBW_BEFORE_BUILD_LINUX: source /host/${GITHUB_WORKSPACE}/setup_linux_env.sh
 
       - uses: actions/upload-artifact@v4
         with:
