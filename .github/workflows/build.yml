@@ -39,11 +39,11 @@ jobs:
           echo $_boost
           export _eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
           echo $_eigen
-          export $_tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
+          export _tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
           echo $_tbb
-          export $_json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
+          export _json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
           echo $_json
-          export $_hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
+          export _hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
           echo $_hepmc3
 
       - name: Build wheels
