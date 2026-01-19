@@ -27,19 +27,8 @@ jobs:
           compiler: g++
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # List files in ${GITHUB_WORKSPACE}/dependencies
-      - name: Debug
-        run: |
-          echo "${GITHUB_WORKSPACE}/dependencies:"
-          ls -l ${GITHUB_WORKSPACE}/dependencies || echo "Error"
-          echo "${GITHUB_WORKSPACE}/dependencies/venv:"
-          ls -l ${GITHUB_WORKSPACE}/dependencies/venv || echo "Error"
-          echo "${GITHUB_WORKSPACE}/dependencies/view:"
-          ls -l ${GITHUB_WORKSPACE}/dependencies/view || echo "Error"
-          echo "${GITHUB_WORKSPACE}/dependencies/venv/lib64/cmake:"
-          ls -l ${GITHUB_WORKSPACE}/dependencies/venv/lib64/cmake || echo "Error"
-          echo "${GITHUB_WORKSPACE}/dependencies/view/lib64/cmake:"
-          ls -l ${GITHUB_WORKSPACE}/dependencies/view/lib64/cmake || echo "Error"
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
