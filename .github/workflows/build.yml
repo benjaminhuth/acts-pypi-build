@@ -32,7 +32,7 @@ jobs:
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28 # glibc 2.28 from 2028
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
-          CMAKE_INSTALL_PREFIX: "/host/${INSTALL_DIR}"
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/host/${INSTALL_DIR}
 
       - uses: actions/upload-artifact@v4
         with:
