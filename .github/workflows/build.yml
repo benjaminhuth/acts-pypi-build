@@ -10,16 +10,16 @@ jobs:
       matrix:
         # macos-15-intel is an Intel runner, macos-14 is Apple silicon
         os: 
-        # - ubuntu-latest
+        - ubuntu-latest
         # - ubuntu-24.04-arm
         # - macos-15-intel
-        - macos-15
+        # - macos-15
 
     steps:
       - uses: actions/checkout@v5
         with:
           repository: benjaminhuth/acts
-          ref: feature/pip-install
+          ref: refactor/examples-framework-no-root
 
       - name: Install dependencies
         uses: ./.github/actions/dependencies
@@ -29,13 +29,9 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
-        # env:
-        #   CIBW_SOME_OPTION: value
-        #   ...
-        # with:
-        #   package-dir: .
-        #   output-dir: wheelhouse
-        #   config-file: "{package}/pyproject.toml"
+        env:
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28 # glibc 2.28 from 2028
+          CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
 
       - uses: actions/upload-artifact@v4
         with:
