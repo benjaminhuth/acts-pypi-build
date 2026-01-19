@@ -27,24 +27,24 @@ jobs:
           compiler: g++
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #- name: Remote terminal
-      #  run: curl -sSf https://sshx.io/get | sh -s run
+      - name: Remote terminal
+        run: curl -sSf https://sshx.io/get | sh -s run
 
       # This is done, because the host container is mounted under /host
       # in the linux builds, and thus all paths of spack do not work inside
       # since they rely on symbolic links that get invalid
-      - name: Extract packages for linux build
-        run: |
-          export boost=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*boost*')
-          echo $boost
-          export eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
-          echo $eigen
-          export tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
-          echo $tbb
-          export json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
-          echo $json
-          export hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
-          echo $hepmc3
+      #- name: Extract packages for linux build
+      #  run: |
+      #    export boost=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*boost*')
+      #    echo $boost
+      #    export eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
+      #    echo $eigen
+      #    export tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
+      #    echo $tbb
+      #    export json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
+      #    echo $json
+      #    export hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
+      #    echo $hepmc3
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
