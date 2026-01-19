@@ -30,9 +30,12 @@ jobs:
       # List files in ${GITHUB_WORKSPACE}/dependencies
       - name: Debug
         run: |
-          ls ${GITHUB_WORKSPACE}/dependencies
-          ls ${GITHUB_WORKSPACE}/dependencies/venv
-          ls ${GITHUB_WORKSPACE}/dependencies/view
+          echo "${GITHUB_WORKSPACE}/dependencies:"
+          ls -l ${GITHUB_WORKSPACE}/dependencies
+          echo "${GITHUB_WORKSPACE}/dependencies/venv:"
+          ls -l ${GITHUB_WORKSPACE}/dependencies/venv
+          echo "${GITHUB_WORKSPACE}/dependencies/venv:"
+          ls -l ${GITHUB_WORKSPACE}/dependencies/view
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
