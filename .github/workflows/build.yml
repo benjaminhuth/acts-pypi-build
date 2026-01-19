@@ -38,7 +38,7 @@ jobs:
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_WORKSPACE
           CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=/host/${GITHUB_WORKSPACE}/dependencies
-          CIBW_BEFORE_ALL: cmake --debug-find-package --find-package Boost
+          CIBW_BEFORE_ALL: cmake --debug-find --find-package -DLANGUAGE=CXX -DCOMPILER_ID=GNU -DNAME=Boost -DMODE=EXIST
 
       - uses: actions/upload-artifact@v4
         with:
