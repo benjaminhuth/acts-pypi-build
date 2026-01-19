@@ -27,6 +27,10 @@ jobs:
           compiler: g++
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # List files in ${GITHUB_WORKSPACE}/dependencies
+      - name: Debug
+        run: ls ${GITHUB_WORKSPACE}/dependencies
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
         env:
@@ -34,6 +38,7 @@ jobs:
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
           CIBW_ENVIRONMENT_PASS_LINUX: GITHUB_WORKSPACE
           CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=/host/${GITHUB_WORKSPACE}/dependencies
+          CIBW_BEFORE_ALL: cmake --debug-find-package --find-package Boost
 
       - uses: actions/upload-artifact@v4
         with:
