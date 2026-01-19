@@ -35,24 +35,24 @@ jobs:
       # since they rely on symbolic links that get invalid
       - name: Extract packages for linux build
         run: |
-          export _boost=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*boost*')
-          echo $_boost
-          export _eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
-          echo $_eigen
-          export _tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
-          echo $_tbb
-          export _json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
-          echo $_json
-          export _hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
-          echo $_hepmc3
+          export boost=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*boost*')
+          echo $boost
+          export eigen=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*eigen*')
+          echo $eigen
+          export tbb=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*intel-tbb*')
+          echo $tbb
+          export json=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*nlohmann-json*')
+          echo $json
+          export hepmc3=/host$(find ${GITHUB_WORKSPACE}/spack -maxdepth 4 -type d -name '*hepmc3*')
+          echo $hepmc3
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28 # glibc 2.28 from 2028
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
-          CIBW_ENVIRONMENT_PASS_LINUX: _boost _eigen _tbb _json _hepmc3
-          CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$_boost:$_eigen:$_tbb:$_json:$_hepmc3
+          CIBW_ENVIRONMENT_PASS_LINUX: boost eigen tbb json hepmc3
+          CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$boost:$eigen:$tbb:$json:$hepmc3
 
       - uses: actions/upload-artifact@v4
         with:
