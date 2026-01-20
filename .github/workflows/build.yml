@@ -24,12 +24,6 @@ jobs:
           ref: test/cibuildwheel
           path: acts
 
-      #- name: Install dependencies
-      #  uses: ./.github/actions/dependencies
-      #  with:
-      #    compiler: g++
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
 
