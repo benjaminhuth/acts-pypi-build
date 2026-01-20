@@ -42,7 +42,7 @@ jobs:
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
           CIBW_BEFORE_ALL: dnf install -y bc && bash CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
           CIBW_ENVIRONMENT_PASS: CI
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=deps/venv:deps/view
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view
 
       - uses: actions/upload-artifact@v4
         with:
