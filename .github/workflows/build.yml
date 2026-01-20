@@ -53,3 +53,25 @@ jobs:
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
+
+
+  upload_pypi_test:
+    needs: build_wheels
+    environment: testpypi
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get wheels
+      uses: actions/download-artifact@v5
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
