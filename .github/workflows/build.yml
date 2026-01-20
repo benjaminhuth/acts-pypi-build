@@ -40,7 +40,7 @@ jobs:
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
           CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
-          CIBW_BEFORE_ALL: dnf install bc && bash CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
+          CIBW_BEFORE_ALL: dnf install -y bc && bash CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
           CIBW_BEFORE_BUILD: source env.sh 
 
       - uses: actions/upload-artifact@v4
