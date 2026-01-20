@@ -2,6 +2,10 @@ name: Build
 
 on: [push]
 
+env:
+  CCACHE_DIR: ${{ github.workspace }}/ccache
+  SETUP_CMD: "bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh"
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -13,7 +17,7 @@ jobs:
         - ubuntu-latest
         # - ubuntu-24.04-arm
         - macos-15-intel
-        # - macos-latest
+        - macos-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -25,6 +29,13 @@ jobs:
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
 
+      - name: Restore ccache
+        id: ccache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os  }}-${{ github.job }}
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
         with:
@@ -32,11 +43,11 @@ jobs:
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
           CIBW_BUILD: cp312-* cp313-*
-          CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
-          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
+          CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
+          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -s && ccache -z
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/project/ccache
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
 
       - uses: actions/upload-artifact@v4
         with:
