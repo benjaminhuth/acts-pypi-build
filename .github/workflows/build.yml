@@ -12,8 +12,8 @@ jobs:
         os: 
         - ubuntu-latest
         # - ubuntu-24.04-arm
-        # - macos-15-intel
-        # - macos-15
+        - macos-15-intel
+        - macos-15
 
     steps:
       - uses: actions/checkout@v5
@@ -27,16 +27,19 @@ jobs:
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
 
+      - name: CChache
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: acts
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
-          CIBW_BUILD: cp312-manylinux_x86_64 # Test only python3.12 for now
-          CIBW_BEFORE_ALL: dnf install -y bc && bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
+          CIBW_BUILD: cp312-* cp313-*
+          CIBW_BEFORE_ALL: dnf install -y bc ccache && bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh
           CIBW_ENVIRONMENT_PASS: CI
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view
+          CIBW_BEFORE_BUILD: ccache -s && ccache -z
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/project/ccache
 
       - uses: actions/upload-artifact@v4
         with:
