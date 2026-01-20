@@ -17,8 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-
-      - uses: actions/checkout@v5
         with:
           repository: benjaminhuth/acts
           ref: test/cibuildwheel
