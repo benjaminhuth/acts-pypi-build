@@ -26,15 +26,6 @@ jobs:
           ref: test/cibuildwheel
           path: acts
 
-      - name: Which OS?
-        run: uname -a
-
-      - name: Spack aarch
-        run: |
-          acts/CI/dependencies/setup_spack.sh spack
-          source spack/share/spack/setup-env.sh
-          spack arch --family
-
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
 
@@ -54,10 +45,11 @@ jobs:
           CIBW_BUILD: cp312-* cp313-*
           CIBW_SKIP: "*-musllinux* *-manylinux_i686"
           CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
-          CIBW_BEFORE_ALL_MACOS: echo MACOSX_DEPLOYMENT_TARGET && echo $MACOSX_DEPLOYMENT_TARGET && brew install ninja ccache && ${{ env.SETUP_CMD }} 
+          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -s && ccache -z 
           CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=15.0
           CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
       - uses: actions/upload-artifact@v4
