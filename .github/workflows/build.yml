@@ -11,6 +11,7 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      max-parallel: 2
       matrix:
         os: 
          - ubuntu-latest
@@ -47,9 +48,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -s && ccache -z 
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view
-          CIBW_ENVIRONMENT_LINUX: CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
-          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=15.0
+          CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
+          CIBW_ENVIRONMENT_MACOS: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view MACOSX_DEPLOYMENT_TARGET=15.0
           CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
       - uses: actions/upload-artifact@v4
