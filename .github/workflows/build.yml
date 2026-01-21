@@ -12,9 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # macos-15-intel is an Intel runner, macos-14 is Apple silicon
         os: 
-        # - ubuntu-latest
+         - ubuntu-latest
         # - ubuntu-24.04-arm
         # - macos-15-intel
          - macos-latest
@@ -48,7 +47,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -s && ccache -z 
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view
+          CIBW_ENVIRONMENT_LINUX: CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=15.0
           CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
