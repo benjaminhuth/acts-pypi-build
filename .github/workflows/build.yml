@@ -54,9 +54,9 @@ jobs:
           CIBW_BUILD: cp312-* cp313-*
           CIBW_SKIP: "*-musllinux* *-manylinux_i686"
           CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
-          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
+          CIBW_BEFORE_ALL_MACOS: echo MACOSX_DEPLOYMENT_TARGET && echo $MACOSX_DEPLOYMENT_TARGET && brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
-          CIBW_BEFORE_BUILD: ccache -s && ccache -z && echo MACOSX_DEPLOYMENT_TARGET && echo $MACOSX_DEPLOYMENT_TARGET
+          CIBW_BEFORE_BUILD: ccache -s && ccache -z 
           CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
           CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
