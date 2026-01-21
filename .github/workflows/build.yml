@@ -33,7 +33,7 @@ jobs:
         run: |
           acts/CI/dependencies/setup_spack.sh spack
           source spack/share/spack/setup-env.sh
-          spack aarch --family
+          spack arch --family
 
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
