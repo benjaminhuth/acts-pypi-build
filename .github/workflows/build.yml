@@ -14,10 +14,10 @@ jobs:
       matrix:
         # macos-15-intel is an Intel runner, macos-14 is Apple silicon
         os: 
-        - ubuntu-latest
+        # - ubuntu-latest
         # - ubuntu-24.04-arm
         # - macos-15-intel
-        # - macos-latest
+         - macos-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -25,6 +25,9 @@ jobs:
           repository: benjaminhuth/acts
           ref: test/cibuildwheel
           path: acts
+
+      - name: Which OS?
+        run: uname -a
 
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
