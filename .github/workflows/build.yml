@@ -2,6 +2,10 @@ name: Build
 
 on: [push]
 
+env:
+  CCACHE_DIR: ${{ github.workspace }}/ccache
+  SETUP_CMD: "bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh"
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -10,34 +14,67 @@ jobs:
       matrix:
         # macos-15-intel is an Intel runner, macos-14 is Apple silicon
         os: 
-        # - ubuntu-latest
+        - ubuntu-latest
         # - ubuntu-24.04-arm
         # - macos-15-intel
-        - macos-15
+        # - macos-latest
 
     steps:
       - uses: actions/checkout@v5
         with:
           repository: benjaminhuth/acts
-          ref: feature/pip-install
+          ref: test/cibuildwheel
+          path: acts
 
-      - name: Install dependencies
-        uses: ./.github/actions/dependencies
+      #- name: Remote terminal
+      #  run: curl -sSf https://sshx.io/get | sh -s run
+
+      - name: Restore ccache
+        id: ccache-restore
+        uses: actions/cache/restore@v5
         with:
-          compiler: g++
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os  }}-${{ github.job }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
-        # env:
-        #   CIBW_SOME_OPTION: value
-        #   ...
-        # with:
-        #   package-dir: .
-        #   output-dir: wheelhouse
-        #   config-file: "{package}/pyproject.toml"
+        with:
+          package-dir: acts
+        env:
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
+          CIBW_BUILD: cp312-* cp313-*
+          CIBW_SKIP: "*-musllinux* *-manylinux_i686"
+          CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
+          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
+          CIBW_ENVIRONMENT_PASS: CI
+          CIBW_BEFORE_BUILD: ccache -s && ccache -z
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
+          CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
+
+
+#  upload_pypi_test:
+#    needs: build_wheels
+#    environment: testpypi
+#    permissions:
+#      id-token: write
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: Get wheels
+#      uses: actions/download-artifact@v5
+#      with:
+#        pattern: cibw-*
+#        path: dist
+#        merge-multiple: true
+#
+#    - name: Publish package distributions to PyPI
+#      uses: pypa/gh-action-pypi-publish@release/v1
+#      with:
+#        packages-dir: dist
+#        repository-url: https://test.pypi.org/legacy/
+#        skip-existing: true
+#        verbose: true
