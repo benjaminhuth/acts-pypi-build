@@ -57,7 +57,8 @@ jobs:
           CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -s && ccache -z && echo MACOSX_DEPLOYMENT_TARGET && echo $MACOSX_DEPLOYMENT_TARGET
-          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}          CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
+          CIBW_ENVIRONMENT: CMAKE_PREFIX_PATH=/project/deps/venv:/project/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
+          CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
 
       - uses: actions/upload-artifact@v4
         with:
