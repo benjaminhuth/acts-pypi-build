@@ -42,7 +42,7 @@ jobs:
           package-dir: acts
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
-          CIBW_BUILD: cp312-* cp313-*
+          CIBW_BUILD: cp312-* # cp313-*
           CIBW_SKIP: "*-musllinux* *-manylinux_i686"
           CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
           CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
