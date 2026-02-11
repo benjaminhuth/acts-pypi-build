@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: benjaminhuth/acts
-          ref: test/cibuildwheel
+          ref: feature/improve-python-wheel-build-and-test
           path: acts
 
       #- name: Remote terminal
