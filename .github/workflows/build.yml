@@ -54,7 +54,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
           CIBW_ENVIRONMENT_MACOS: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view MACOSX_DEPLOYMENT_TARGET=15.0
           CIBW_BEFORE_TEST: ccache -s
-          CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
+          CIBW_TEST_COMMAND: python {project}/Python/Examples/bin/hello_world_kalman.py 
 
       - uses: actions/upload-artifact@v4
         with:
