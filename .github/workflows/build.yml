@@ -4,14 +4,29 @@ on: [push]
 
 env:
   CCACHE_DIR: ${{ github.workspace }}/ccache
+  CCACHE_KEY_SUFFIX: r2
   SETUP_CMD: "bash {package}/CI/dependencies/setup.sh -t v19.0.0 -d deps -e env.sh"
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set TIMESTAMP variable
+        run: echo "dev$(date +%Y%m%d%H%M%S)" > build_version.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-version
+          path: build_version.txt
+
+
   build_wheels:
+    needs: prepare
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 2
+      fail-fast: false
       matrix:
         os: 
          - ubuntu-latest
@@ -26,6 +41,14 @@ jobs:
           ref: feature/improve-python-wheel-build-and-test
           path: acts
 
+      - name: Download build version
+        uses: actions/download-artifact@v4
+        with:
+          name: build-version
+
+      - name: print build version
+        run: cat build_version.txt
+
       #- name: Remote terminal
       #  run: curl -sSf https://sshx.io/get | sh -s run
 
@@ -34,7 +57,9 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os  }}-${{ github.job }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.CCACHE_KEY_SUFFIX }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-${{ env.CCACHE_KEY_SUFFIX }}-
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.1
@@ -42,40 +67,67 @@ jobs:
           package-dir: acts
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
-          CIBW_BUILD: cp312-* cp313-*
+          CIBW_BUILD: "cp311-* cp310-* cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux* *-manylinux_i686"
           CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
           CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
           CIBW_ENVIRONMENT_PASS: CI
-          CIBW_BEFORE_BUILD: ccache -s && ccache -z 
+          CIBW_BEFORE_BUILD: ccache -z 
           CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
           CIBW_ENVIRONMENT_MACOS: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view MACOSX_DEPLOYMENT_TARGET=15.0
-          CIBW_TEST_COMMAND: python -c "import acts; v = acts.Vector3(1,2,3)"
+          CIBW_BEFORE_TEST: ccache -s
+          CIBW_TEST_COMMAND: python {project}/acts/Python/Examples/bin/hello_world_kalman.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      # Make conditional once we also do main builds 
+      - name: Patch version to dev version
+        run: |
+          PATCHED_VERSION="$(cat acts/version_number).$(cat build_version.txt)"
+          echo "Patch to version $PATCHED_VERSION"
+          python3 -m pip install change-wheel-version==0.6.0
+          cd wheelhouse
+          for f in ./*.whl; do
+            change_wheel_version $f --version $PATCHED_VERSION --delete-old-wheel
+          done
+          ls 
 
       - uses: actions/upload-artifact@v4
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
+      - name: Save ccache
+        uses: actions/cache/save@v5
+        if: always()
+        with:
+          path: ${{ github.workspace }}/ccache
+          key: ${{ steps.ccache-restore.outputs.cache-primary-key }}
 
-#  upload_pypi_test:
-#    needs: build_wheels
-#    environment: testpypi
-#    permissions:
-#      id-token: write
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: Get wheels
-#      uses: actions/download-artifact@v5
-#      with:
-#        pattern: cibw-*
-#        path: dist
-#        merge-multiple: true
-#
-#    - name: Publish package distributions to PyPI
-#      uses: pypa/gh-action-pypi-publish@release/v1
-#      with:
-#        packages-dir: dist
-#        repository-url: https://test.pypi.org/legacy/
-#        skip-existing: true
-#        verbose: true
+
+  upload_pypi_test:
+    needs: build_wheels
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/pyacts
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get wheels
+      uses: actions/download-artifact@v5
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        verbose: true
