@@ -1,10 +1,17 @@
 name: Build
 
 # Build and deploy on push and every night at 3:05 UTC
+# Tagged releases are triggered manually via workflow_dispatch
 on:
   push:
   schedule:
     - cron: '5 3 * * *'
+  workflow_dispatch:
+    inputs:
+      acts_ref:
+        description: 'Acts ref to build (e.g. v39.3.0)'
+        required: true
+        type: string
 
 env:
   CCACHE_DIR: ${{ github.workspace }}/ccache
@@ -18,9 +25,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set build version
+        if: github.event_name != 'workflow_dispatch'
         run: echo "dev$(date +%Y%m%d%H%M%S)" > build_version.txt
 
       - uses: actions/upload-artifact@v4
+        if: github.event_name != 'workflow_dispatch'
         with:
           name: build-version
           path: build_version.txt
@@ -28,7 +37,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: acts-project/acts
-          ref: main
+          ref: ${{ github.event.inputs.acts_ref || 'main' }}
           path: acts
 
       - name: Package source as tarball
@@ -63,11 +72,13 @@ jobs:
         run: tar xzf acts-source.tar.gz
 
       - name: Download build version
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/download-artifact@v4
         with:
           name: build-version
 
       - name: print build version
+        if: github.event_name != 'workflow_dispatch'
         run: cat build_version.txt
 
       #- name: Remote terminal
@@ -104,8 +115,8 @@ jobs:
         with:
           python-version: "3.13"
 
-      # Make conditional once we also do tagged builds
       - name: Patch version to dev version
+        if: github.event_name != 'workflow_dispatch'
         run: |
           PATCHED_VERSION="$(cat acts/version_number).$(cat build_version.txt)"
           echo "Patch to version $PATCHED_VERSION"
@@ -130,6 +141,7 @@ jobs:
 
   upload_pypi_test:
     needs: build_wheels
+    if: github.event_name != 'workflow_dispatch'
     environment:
       name: testpypi
       url: https://test.pypi.org/project/pyacts
@@ -149,5 +161,29 @@ jobs:
       with:
         packages-dir: dist
         repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        verbose: true
+
+  upload_pypi:
+    needs: build_wheels
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pyacts
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get wheels
+      uses: actions/download-artifact@v5
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist
         skip-existing: true
         verbose: true
