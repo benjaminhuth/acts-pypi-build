@@ -101,8 +101,9 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34 # based on almalinux9
           CIBW_BUILD: "cp311-* cp310-* cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux* *-manylinux_i686"
-          CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }} 
-          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }} 
+          CIBW_BEFORE_ALL_LINUX: dnf install -y bc ccache && ${{ env.SETUP_CMD }}
+          CIBW_BEFORE_ALL_MACOS: brew install ninja ccache && ${{ env.SETUP_CMD }}
+          CIBW_ENVIRONMENT: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           CIBW_ENVIRONMENT_PASS: CI
           CIBW_BEFORE_BUILD: ccache -z 
           CIBW_ENVIRONMENT_LINUX: CMAKE_PREFIX_PATH=$PWD/deps/venv:$PWD/deps/view CCACHE_DIR=/host/${{ env.CCACHE_DIR }}
